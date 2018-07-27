@@ -1,0 +1,44 @@
+# mysql
+docker-lnmp-mysql:
+    # Dockerfile所在目录
+    build: ./mysql
+    # 本机端口:镜像对外暴露的端口
+    ports:
+        - "7203:3306"
+    # 环境变量
+    environment:
+        - MYSQL_DATABASE=mysql
+        - MYSQL_USER=root
+        - MYSQL_ROOT_PASSWORD=uqh7ybwbf66t21ybbf
+    # 挂载 本机目录：镜像里的目录
+    volumes:
+        - /home/dockerdata/mysql:/var/lib/mysql
+    restart: always
+
+# php7
+docker-lnmp-php7:
+    build: ./php7
+    ports:
+        - "7202:9000"
+    # 连接 连接之后，在php镜像里可以和mysql镜像通信 镜像名:别名
+    links:
+        - docker-lnmp-mysql:mysql
+    # /usr/local/nginx/html这个可以和nginx镜像的项目目录不一样，但是配置成一样的比较直观
+    volumes:
+        - /home/dockerwww:/usr/local/nginx/html
+    restart: always
+
+# nginx
+docker-lnmp-nginx:
+    build: ./nginx
+    ports:
+        - "7201:80"
+        - "7204:443"
+    links:
+        - docker-lnmp-php7:php7
+    # 本机PHP项目目录：nginx镜像的项目目录
+    # 本机nginx的vhost目录：nginx镜像的vhost目录
+    volumes:
+        - /home/dockerwww:/usr/local/nginx/html
+        - /home/dockeretc/nginx/vhost/:/usr/local/nginx/conf/vhost
+    restart: always
